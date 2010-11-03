@@ -37,22 +37,24 @@ package
 		[Embed(source="data/players/31.png")] protected var Img31:Class;
 		[Embed(source="data/players/32.png")] protected var Img32:Class;
 		[Embed(source="data/players/33.png")] protected var Img33:Class;
+		[Embed(source="data/players/34.png")] protected var Img34:Class;
 		
 		public var velocityXScale:Number;
 		public var velocityYScale:Number;
 		
 		public function Player(Graphic:Class=null)
 		{
-			var a:Array = [Img1,Img2,Img3,Img4,Img5,Img6,Img7,Img8,Img9,Img10,Img11,Img12,Img13,Img14,Img15,Img16,Img17,Img18,Img19,Img20,Img21,Img22,Img23,Img24,Img25,Img26,Img27,Img28,Img29,Img30,Img31,Img32,Img33];
+			var a:Array = [Img1,Img2,Img3,Img4,Img5,Img6,Img7,Img8,Img9,Img10,Img11,Img12,Img13,Img14,Img15,Img16,Img17,Img18,Img19,Img20,Img21,Img22,Img23,Img24,Img25,Img26,Img27,Img28,Img29,Img30,Img31,Img32,Img33,Img34];
 			super(a[uint(FlxU.random()*a.length)]);
 		}
 		
 		override public function update():void
 		{
+			if(dead)
+				return super.update();
+			
 			//Calculate player motion
-			var v:Number = 120;
-			if(FlxG.keys.SHIFT)
-				v *= 2;
+			var v:Number = 220;
 			velocity.x = 0;
 			velocity.y = 0;
 			var a:Boolean = false;
@@ -84,8 +86,8 @@ package
 			}
 			if(a)
 			{
-				velocity.x *= 0.73;
-				velocity.y *= 0.73;
+				velocity.x *= 0.81;
+				velocity.y *= 0.81;
 			}
 			
 			//Scale any player motion that's near the edges of the arena

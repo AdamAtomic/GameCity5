@@ -4,10 +4,10 @@ package
 
 	public class PlayState extends FlxState
 	{
-		[Embed(source="data/vignette.png")] protected var ImgVignette:Class;
-		[Embed(source="data/house.png")] protected var ImgHouse:Class;
-		[Embed(source="data/GoGoGoSong.mp3")] protected var SndGo:Class;
-		[Embed(source="data/HomeSong.mp3")] protected var SndHome:Class;
+		[Embed(source="data/vignette.png")] public var ImgVignette:Class;
+		[Embed(source="data/house.png")] public var ImgHouse:Class;
+		[Embed(source="data/GoGoGoSong.mp3")] public var SndGo:Class;
+		[Embed(source="data/HomeSong.mp3")] public var SndHome:Class;
 		
 		public var player:Player;
 		public var house:SquashSprite;
@@ -32,7 +32,7 @@ package
 		
 		override public function create():void
 		{
-			var i:uint;
+			var i:int;
 			
 			radius = FlxG.width*3; //this is half the diameter of the circular arena
 			umbra = FlxG.width*0.8;
@@ -48,7 +48,11 @@ package
 			bg2.alpha = 0;
 			add(bg2);
 			
+			//create player
 			player = new Player();
+			var p:FlxPoint = new FlxPoint();
+			FlxU.rotatePoint(radius-umbra,0,0,0,FlxU.random()*360,p);
+			player.reset(p.x - player.width/2,p.y - player.height/2);
 			
 			//bg motion stuffs
 			bgEmitter = new FlxEmitter();
@@ -58,7 +62,7 @@ package
 			bgEmitter.setRotation();
 			bgEmitter.gravity = 0;
 			bgEmitter.drag.x = bgEmitter.drag.y = 0;
-			for(i = 0; i < 10; i++)
+			for(i = 0; i < 5; i++)
 				bgEmitter.add(new BGElement());
 			add(bgEmitter);
 			bgEmitter.start(false);
@@ -72,20 +76,23 @@ package
 			add(house);
 			
 			var t:Thought;
+			Thought.init();
 			thoughts = new FlxGroup();
-			var p:FlxPoint = new FlxPoint();
-			for(i = 0; i < 40; i++)
+			for(i = 0; i < 50; i++)
 			{
-				t = new Thought();
 				FlxU.rotatePoint(FlxU.random()*radius,0,0,0,FlxU.random()*360,p);
+				if(!check(p))
+				{
+					i--;
+					continue;
+				}
+				t = new Thought();
 				t.reset(p.x,p.y);
 				thoughts.add(t);
 			}
 			add(thoughts);
 
 			//actually add player here
-			FlxU.rotatePoint(radius-umbra,0,0,0,FlxU.random()*360,p);
-			player.reset(p.x - player.width/2,p.y - player.height/2);
 			add(player);
 			
 			//dark corners
@@ -115,7 +122,7 @@ package
 			FlxG.followAdjust(0.25,0.25);
 			FlxU.setWorldBounds(-radius,-radius,radius*2,radius*2,5);
 			
-			FlxG.flash.start(0xff000000);
+			FlxG.flash.start(0xff000000,0.5);
 			
 			if((FlxG.music == null) || (!FlxG.music.playing))
 				FlxG.playMusic(SndGo);
@@ -127,7 +134,17 @@ package
 			home.proximity(0,0,player,radius*0.65);
 		}
 		
-		protected function onFade():void
+		public function check(P:FlxPoint):Boolean
+		{
+			if(P.getDistance(player) < FlxG.width*0.5)
+				return false;
+			for(var i:uint = 0; i < thoughts.members.length; i++)
+				if(P.getDistance(thoughts.members[i] as FlxPoint) < 50)
+					return false;
+			return true;
+		}
+		
+		public function onFade():void
 		{
 			home.proximity(0,0,null,0);
 			if(!won)
@@ -135,7 +152,7 @@ package
 			FlxG.state = new MenuState();
 		}
 		
-		protected function onLost(T:Thought,P:Player):void
+		public function onLost(T:Thought,P:Player):void
 		{
 			P.kill();
 			T.kill();
@@ -152,7 +169,7 @@ package
 			{
 				if(text1.alpha < 1)
 					text1.alpha += FlxG.elapsed*0.5;
-				if((timer > 5) && (text2.alpha > 0))
+				if((timer > 3.5) && (text2.alpha > 0))
 				{
 					text2.alpha -= FlxG.elapsed;
 					FlxG.fade.start(0xff000000,1,onFade);
@@ -202,7 +219,7 @@ package
 			}
 			bgEmitter.x = player.x + player.origin.x - bgEmitter.width/2;
 			bgEmitter.y = player.y + player.origin.y - bgEmitter.height/2;
-			bgEmitter.delay = 0.15 + (d/radius)*1.2;
+			bgEmitter.delay = 0.2 + (d/radius)*1.3;
 			bg2.alpha = (radius-d)/radius;
 			bg2.alpha *= bg2.alpha;
 			
@@ -215,7 +232,7 @@ package
 				won = true;
 				timer = 0;
 				text2.text = "found its way back";
-				thoughts.kill();
+				thoughts.killMembers();
 			}
 			
 			if(!won && !player.dead)

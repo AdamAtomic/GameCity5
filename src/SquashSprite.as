@@ -61,6 +61,18 @@ package
 		
 		override public function update():void
 		{
+			if(dead)
+			{
+				alpha -= FlxG.elapsed;
+				angularVelocity *= 30*FlxG.elapsed;
+				scale.x *= 1+FlxG.elapsed;
+				scale.y = scale.x;
+				if(alpha < 0)
+					super.kill();
+				else
+					super.update();
+				return;
+			}
 			var v:Number = FlxU.abs(velocity.x) + FlxU.abs(velocity.y);
 			if((v > 0) || alwaysBounce)
 			{
@@ -91,14 +103,24 @@ package
 			if(!onScreen())
 				return;
 			
-			shadow.x = x + 2;
-			shadow.y = y + 3;
-			shadow.scale.x = scale.x;
-			shadow.scale.y = scale.y;
-			shadow.angle = angle;
-			shadow.facing = facing;
-			shadow.render();
+			if(!dead)
+			{
+				shadow.x = x + 2;
+				shadow.y = y + 3;
+				shadow.scale.x = scale.x;
+				shadow.scale.y = scale.y;
+				shadow.angle = angle;
+				shadow.facing = facing;
+				shadow.render();
+			}
 			super.render();
+		}
+		
+		override public function kill():void
+		{
+			dead = true;
+			angularVelocity = (FlxU.random()<0.5)?-90:90;
+			velocity.x = velocity.y = 0;
 		}
 		
 		public function updateScale():void

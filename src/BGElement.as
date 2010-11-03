@@ -15,17 +15,17 @@ package
 		public var player:Player;
 		public var at:Number;
 		public var timer:Number;
+		public var toggle:uint;
 		
 		public function BGElement()
 		{
 			var a:Array = [Img1,Img2,Img3,Img4,Img5];
 			super(0,0,a[uint(FlxU.random()*a.length)]);
+			blend = "overlay";
 			radius = (FlxG.state as PlayState).radius;
 			middle = (FlxG.state as PlayState).middle;
 			player = (FlxG.state as PlayState).player;
-			
-			at = 0.3;
-			
+			at = 0.65;
 			super.kill();
 		}
 		
@@ -35,12 +35,13 @@ package
 			angle = FlxU.getAngle(x+origin.x,y+origin.y) + 180;
 			var d:Number = getDistanceMidpoints(middle);
 			thrust = -1000;
-			scale.x = scale.y = 0.5 + (d/radius)*2;
+			scale.x = scale.y = 0.8 + (d/radius)*2;
 			alpha = 0;
 			timer = 0;
+			toggle = 100;
 			
 			d = player.getDistanceMidpoints(middle);
-			color = 0x5f5f5f + ((0x9f*(1-(d/radius)))<<16) + (d/radius)*0x9f;
+			//color = 0x5f5f5f + ((0x9f*(1-(d/radius)))<<16) + ((0x9f*(1-(d/radius)))<<8) + (d/radius)*0x9f;
 		}
 		
 		override public function update():void
@@ -54,17 +55,23 @@ package
 				return;
 			}
 			
-			angle = FlxU.getAngle(x+origin.x,y+origin.y) + 180;
-			
-			var d:Number = getDistanceMidpoints(middle);
-			scale.x = scale.y = 0.5 + (d/radius)*2;
 			timer += FlxG.elapsed;
-			if((scale.x < 0.6) || (timer > 3))
-				kill();
-			if(alpha < at)
-				alpha += FlxG.elapsed*0.5;
-			maxThrust = (1-d/radius);
-			maxThrust *= maxThrust * 100;
+			toggle++;
+			if(toggle > 4)
+			{
+				toggle = 0;
+				angle = FlxU.getAngle(x+origin.x,y+origin.y) + 180;
+				var d:Number = getDistanceMidpoints(middle);
+				scale.x = scale.y = 0.8 + (d/radius)*2;
+				if((scale.x < 0.9) || (timer > 2))
+					kill();
+				if(alpha < at)
+					alpha += timer;
+				if(alpha > at)
+					alpha = at;
+				maxThrust = (1-d/radius);
+				maxThrust *= maxThrust * 200;
+			}
 			super.update();
 		}
 		
